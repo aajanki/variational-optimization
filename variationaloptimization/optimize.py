@@ -13,18 +13,21 @@ def minimize_variational(f, x0, learning_rate=1e-3, max_iter=100, disp=False):
 
         # take a stochastic gradient descent step
         grad = _estimate_grad(f, theta)
-        theta = np.maximum(np.minimum(theta - learning_rate*grad,
-                                      1 - 1e-6), 1e-6)
+        theta_new = np.maximum(np.minimum(theta - learning_rate*grad,
+                                          1 - 1e-6), 1e-6)
 
         if disp:
             # estimate the upper bound U(theta) at the updated theta
             uval = _estimate_U(f, theta)
+            theta_diff = np.linalg.norm(theta_new - theta, ord=2)
 
             #print(theta)
-            print('U = ' + str(uval))
+            print('U = {}, theta diff = {}'.format(uval, theta_diff))
+
+        theta = theta_new
 
     minf, minx = _sample_minimum(f, theta)
-    return OptimizeResult(x=minx, success=True, fun=minf, nit=num_iter)
+    return OptimizeResult(x=minx, success=True, fun=minf, theta=theta, nit=num_iter)
 
 
 def _estimate_grad(f, theta, num_samples=5):
