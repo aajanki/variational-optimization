@@ -7,17 +7,27 @@ def minimize_variational(f, x0, learning_rate=1e-3, max_iter=100, disp=False,
                          callback=None, callback_freq=100):
     """Minimize a scalar, 0-1 input function using variational optimization."""
     theta = 0.5*np.ones(x0.shape)
+    moment = np.zeros(x0.shape)
+    v = np.zeros(x0.shape)
     num_iter = 0
+    beta1 = 0.9
+    beta2 = 0.999
+    epsilon = 1e-8
 
     while num_iter < max_iter:
         num_iter += 1
 
-        # take a stochastic gradient descent step
+        # Take a stochastic gradient descent step.
         grad = _estimate_grad(f, theta)
-        theta_new = np.maximum(np.minimum(theta - learning_rate*grad,
-                                          1 - 1e-6), 1e-6)
 
-        
+        # Adapt the learning rate using Adam
+        moment = beta1*moment + (1 - beta1)*grad
+        moment_sc = moment/(1 - beta1**num_iter)
+        v = beta2*v + (1 - beta2)*grad*grad
+        v_sc = v/(1 - beta2**num_iter)
+
+        theta_new = theta - learning_rate*moment_sc/(np.sqrt(v_sc) + epsilon)
+        theta_new = np.maximum(np.minimum(theta_new, 1 - 1e-6), 1e-6)
 
         # estimate the upper bound U(theta) at the updated theta
         execute_callback = num_iter % callback_freq == 0
@@ -26,8 +36,6 @@ def minimize_variational(f, x0, learning_rate=1e-3, max_iter=100, disp=False,
 
         if disp:
             theta_diff = np.linalg.norm(theta_new - theta, ord=2)
-
-            #print(theta)
             print('U = {}, theta diff = {}'.format(uval, theta_diff))
 
         if execute_callback:

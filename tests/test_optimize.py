@@ -13,8 +13,8 @@ def test_optimization():
 
     assert minres.success
     assert minres.fun == -value
-    assert value > 100
-    assert value <= 169
+    assert value > 90
+    assert value <= 177
     assert weight > 0
     assert weight <= knapsack.max_weight
 
