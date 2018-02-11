@@ -6,7 +6,7 @@ from scipy.optimize import OptimizeResult
 def minimize_variational(f, x0, learning_rate=1e-3, max_iter=100, disp=False,
                          callback=None, callback_freq=100):
     """Minimize a scalar, 0-1 input function using variational optimization."""
-    theta = 0.5*np.ones(x0.shape)
+    theta = np.random.uniform(0.01, 0.99, size=x0.shape)
     moment = np.zeros(x0.shape)
     v = np.zeros(x0.shape)
     num_iter = 0
