@@ -3,7 +3,8 @@ import numpy.random as rnd
 from scipy.optimize import OptimizeResult
 
 
-def minimize_variational(f, x0, learning_rate=1e-3, max_iter=100, disp=False):
+def minimize_variational(f, x0, learning_rate=1e-3, max_iter=100, disp=False,
+                         callback=None, callback_freq=100):
     """Minimize a scalar, 0-1 input function using variational optimization."""
     theta = 0.5*np.ones(x0.shape)
     num_iter = 0
@@ -16,13 +17,23 @@ def minimize_variational(f, x0, learning_rate=1e-3, max_iter=100, disp=False):
         theta_new = np.maximum(np.minimum(theta - learning_rate*grad,
                                           1 - 1e-6), 1e-6)
 
-        if disp:
-            # estimate the upper bound U(theta) at the updated theta
+        
+
+        # estimate the upper bound U(theta) at the updated theta
+        execute_callback = num_iter % callback_freq == 0
+        if disp or execute_callback:
             uval = _estimate_U(f, theta)
+
+        if disp:
             theta_diff = np.linalg.norm(theta_new - theta, ord=2)
 
             #print(theta)
             print('U = {}, theta diff = {}'.format(uval, theta_diff))
+
+        if execute_callback:
+            force_stop = callback(uval, theta_new, num_iter)
+            if force_stop:
+                break
 
         theta = theta_new
 
