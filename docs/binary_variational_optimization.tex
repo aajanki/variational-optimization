@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+
+\title{Variational optimization for the minimization of functions on the binary domain}
+\date{\today}
+\author{Antti Ajanki}
+
+\begin{document}
+
+\maketitle
+
+We consider the task of minimizing a non-linear scalar function
+$f(\vec{x})$, where the input is an $N$ dimensional binary vector,
+$\vec{x} \in \{0, 1\}^N$.
+
+\section{Variational optimization}
+
+The minimum of a function is always less than or equal to its
+expected value over any distribution $p(x | \theta)$:
+\[
+\min f(x) \leq E\left[f(x)\right]_{p(x | \theta)}
+\]
+
+The bound can be made tight if $p(x | \theta)$ is so flexible that all
+the probability mass can be concentrated on the true minimum
+$\text{argmin} f(x)$.
+
+The idea of variational optimization~\cite{staines2012} is to consider
+the upper bound $U(\theta) = E\left[f(x)\right]_{p(x | \theta)}$ as a
+function of $\theta$ and minimize that. This converts the task of
+minimizing a function $f(x)$ of binary variables to minimization of a
+function $U(\theta)$ of a continuous variable. Any method for
+continuous optimization can be applied for find a local minimum of
+$U(\theta)$.
+
+\section{Stochastic gradient descent}
+
+Because $\vec{x}$ is a binary vector, it is natural to choose to take
+the expectation over a separable Bernoulli distribution:
+\[
+p(\vec{x} | \vec{\theta}) = \prod_i p_i(x_i | \theta_i) = \prod_i
+\theta_i^{x_i} (1 - \theta_i)^{1-x_i}
+\]
+
+Let's use the stochastic gradient descent to find the local minimum of
+the upper bound $U(\vec{\theta})$. First we need the partial
+derivates:
+\begin{align*}
+\frac{\partial U(\vec{\theta})}{\partial \theta_j}  &=
+\frac{\partial}{\partial \theta_j} E
+\left[f(\vec{x})\right]_{p(\vec{x} | \vec{\theta})}\\
+&= \int f(\vec{x}) \frac{\partial}{\partial \theta_j} p(\vec{x} |
+\vec{\theta})  d\vec{x}\\
+&= \int f(\vec{x}) 
+\frac{\partial}{\partial \theta_j} \theta_j^{x_j} (1-\theta_j)^{1 - x_j}
+\prod_{i \neq j} p_i(x_i | \theta_i) d\vec{x}\\
+&= \int f(\vec{x}) 
+\left( \theta_j^{x_j} (x_j - 1) (1-\theta_j)^{1 - x_j - 1} + x_j
+\theta_j^{x_j - 1} (1-\theta_j)^{1 - x_j} \right)
+\prod_{i \neq j} p_i(x_i | \theta_i) d\vec{x}\\
+&= \int f(\vec{x}) \theta_j^{x_j}
+(1-\theta_j)^{1-x_j} \left( \frac{x_j - 1}{1 - \theta_j} +
+\frac{x_j}{\theta_j} \right) \prod_{i \neq j} p_i(x_i | \theta_i) d\vec{x}\\
+&= \int f(\vec{x}) \left( \frac{x_j - 1}{1 - \theta_j} +
+\frac{x_j}{\theta_j} \right) \prod_i p(\vec{x} | \vec{\theta})
+d\vec{x}\\
+&= E\left[ f(\vec{x}) \left( \frac{x_j - 1}{1 - \theta_j} +
+\frac{x_j}{\theta_j} \right) \right]_{p(\vec{x} | \vec{\theta})}
+\end{align*}
+
+David Barber proposed approximating the last expectation by sampling~\cite{barber2017}:
+\[
+\frac{\partial U(\vec{\theta})}{\partial \theta_j} \approx \frac{1}{K}
+\sum_{k=1}^K f\left( \vec{x}^{(k)} \right) \left( \frac{x_j^{(k)} -
+  1}{1 - \theta_j} + \frac{x_j^{(k)}}{\theta_j} \right),
+\]
+where $\vec{x}^{(1)}$ through $\vec{x}^{(K)}$ are samples from
+$p(\vec{x}| \vec{\theta})$.
+
+Now that we have a way to approximate the gradient $\nabla
+U(\vec{\theta})$, we can apply the stochastic gradient descent to
+iteratively search for the minimum. The $\vec{\theta}$ is updated by
+taking small steps in the direction of the negative gradient:
+\[
+\vec{\theta}^{\text{new}} = \vec{\theta} - \frac{\eta}{K} \sum_{k=1}^K
+f\left( \vec{x}^{(k)} \right) \left( \frac{x_j^{(k)} - 1}{1 -
+  \theta_j} + \frac{x_j^{(k)}}{\theta_j} \right),
+\]
+where $\eta$ is the learning rate. Next, new $\vec{x}$ samples are drawn
+from $p(\vec{x} | \vec{\theta}^{\text{new}})$ and the iteration is
+repeated until convergence.
+
+\begin{thebibliography}{9}
+\bibitem{staines2012}
+  Joe Staines, David Barber:
+  \textit{Variational Optimization},
+  \url{https://arxiv.org/abs/1212.4507v2}, 2012.
+\bibitem{barber2017}
+  David Barber:
+  \textit{Evolutionary Optimization as a Variational Method},
+  \url{https://davidbarber.github.io/blog/2017/04/03/variational-optimisation/},
+  Apr 3, 2017.
+\end{thebibliography}
+
+\end{document}

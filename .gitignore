@@ -5,3 +5,6 @@ __pycache__
 /*.egg-info
 /.cache
 /.eggs
+/docs/*.aux
+/docs/*.log
+/docs/*.out
