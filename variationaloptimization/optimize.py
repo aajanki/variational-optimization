@@ -5,7 +5,38 @@ from scipy.optimize import OptimizeResult
 
 def minimize_variational(f, theta0, learning_rate=1e-3, max_iter=100, disp=False,
                          callback=None, callback_freq=100):
-    """Minimize a scalar, 0-1 input function using variational optimization."""
+    """Minimize a scalar, 0-1 input function using variational optimization.
+
+    Parameters
+    ----------
+    f : function
+      The function to minimize. Must take one parameter, a numpy array of 0-1
+      binary variables. Must return a float or a double.
+
+    theta0 : numpy array, [n_dimensions]
+      An initial guess for the probability of how likely each dimension in the
+      function input is 1. Used as a starting point for the optimization.
+
+    learning_rate : float, optional (default=1e-3)
+      A base learning rate in SGD. The learning rate is adapted using Adam
+      during the optimization.
+
+    max_iter : int, optionnal (default=100)
+      The number of iterations.
+
+    disp : boolean, optional (default=False)
+      If true, will print status messages after each iteration.
+
+    callback : function, optional (default=None)
+      A callable that is called periodically to report the progress. Takes
+      three parameters: the value of the variational optimization upper bound,
+      the gradient and the number of iterations completed. If None (which is
+      the default), the callback is never executed. The optimization can be
+      stopped early by returning True from the callback.
+
+    callback_freq : int, optional (default=100)
+      How often the callback is executed?
+    """
     theta = theta0
     moment = np.zeros(theta0.shape)
     v = np.zeros(theta0.shape)
