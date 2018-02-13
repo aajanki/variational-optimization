@@ -3,12 +3,12 @@ import numpy.random as rnd
 from scipy.optimize import OptimizeResult
 
 
-def minimize_variational(f, x0, learning_rate=1e-3, max_iter=100, disp=False,
+def minimize_variational(f, theta0, learning_rate=1e-3, max_iter=100, disp=False,
                          callback=None, callback_freq=100):
     """Minimize a scalar, 0-1 input function using variational optimization."""
-    theta = np.random.uniform(0.01, 0.99, size=x0.shape)
-    moment = np.zeros(x0.shape)
-    v = np.zeros(x0.shape)
+    theta = theta0
+    moment = np.zeros(theta0.shape)
+    v = np.zeros(theta0.shape)
     num_iter = 0
     beta1 = 0.9
     beta2 = 0.999
