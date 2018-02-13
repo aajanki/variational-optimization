@@ -61,7 +61,9 @@ def minimize_variational(f, theta0, learning_rate=1e-3, max_iter=100, disp=False
         theta_new = np.maximum(np.minimum(theta_new, 1 - 1e-6), 1e-6)
 
         # estimate the upper bound U(theta) at the updated theta
-        execute_callback = callback is not None and num_iter % callback_freq == 0
+        execute_callback = (callback is not None and
+                            callback_freq > 0 and
+                            num_iter % callback_freq == 0)
         if disp or execute_callback:
             uval = _estimate_U(f, theta)
 
