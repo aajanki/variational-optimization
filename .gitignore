@@ -8,3 +8,4 @@ __pycache__
 /docs/*.aux
 /docs/*.log
 /docs/*.out
+/.pytest_cache/
