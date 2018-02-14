@@ -37,7 +37,7 @@ def minimize_variational(f, theta0, learning_rate=1e-3, max_iter=100, disp=False
     callback_freq : int, optional (default=100)
       How often the callback is executed?
     """
-    theta = theta0
+    theta = scale_theta(theta0)
     moment = np.zeros(theta0.shape)
     v = np.zeros(theta0.shape)
     num_iter = 0
@@ -58,7 +58,7 @@ def minimize_variational(f, theta0, learning_rate=1e-3, max_iter=100, disp=False
         v_sc = v/(1 - beta2**num_iter)
 
         theta_new = theta - learning_rate*moment_sc/(np.sqrt(v_sc) + epsilon)
-        theta_new = np.maximum(np.minimum(theta_new, 1 - 1e-6), 1e-6)
+        theta_new = scale_theta(theta_new)
 
         # estimate the upper bound U(theta) at the updated theta
         execute_callback = (callback is not None and
@@ -80,6 +80,10 @@ def minimize_variational(f, theta0, learning_rate=1e-3, max_iter=100, disp=False
 
     minf, minx = _sample_minimum(f, theta)
     return OptimizeResult(x=minx, success=True, fun=minf, theta=theta, nit=num_iter)
+
+
+def scale_theta(theta):
+    return np.maximum(np.minimum(theta, 1 - 1e-6), 1e-6)
 
 
 def _estimate_grad(f, theta, num_samples=5):
