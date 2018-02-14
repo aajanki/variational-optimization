@@ -40,6 +40,8 @@ def minimize_variational(f, theta0, learning_rate=1e-3, max_iter=100, disp=False
     theta = scale_theta(theta0)
     moment = np.zeros(theta0.shape)
     v = np.zeros(theta0.shape)
+    learning_rate = np.maximum(learning_rate, 1e-10)
+    max_iter = np.maximum(max_iter, 1)
     num_iter = 0
     beta1 = 0.9
     beta2 = 0.999
